@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Construction Calculator</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --text-color: #333;
+            --border-color: #ced4da;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: var(--text-color);
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--primary-color);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        
+        .calculator-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: var(--primary-color);
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            background-color: var(--secondary-color);
+            border-bottom-color: var(--accent-color);
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: #34495e;
+        }
+        
+        .calculator-content {
+            padding: 25px;
+            display: none;
+        }
+        
+        .calculator-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        input[type="number"], 
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background-color: white;
+            color: var(--text-color);
+        }
+        
+        input[type="number"]:focus, 
+        input[type="text"]:focus,
+        select:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            margin-top: 30px;
+            background-color: var(--light-color);
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 5px solid var(--secondary-color);
+        }
+        
+        .results h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .result-item {
+            margin-bottom: 10px;
+            padding: 12px;
+            background-color: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--secondary-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .result-item span:first-child {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .result-item span:last-child {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .unit-toggle {
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .unit-toggle label {
+            margin-right: 15px;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+        
+        .unit-toggle select {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .dimension-inputs {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .dimension-inputs input {
+            flex: 1;
+        }
+        
+        .settings-panel {
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .settings-panel h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            height: 18px;
+            width: 18px;
+        }
+        
+        .truck-options {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .truck-options h4 {
+            margin-top: 0;
+        }
+        
+        .input-highlight {
+            background-color: #fff8e1;
+            border-color: #ffd54f;
+        }
+        
+        .visual-representation {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .visual-box {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        /* Color blind friendly colors */
+        .color-cement { background-color: #0077bb; } /* Blue */
+        .color-sand { background-color: #ee7733; } /* Orange */
+        .color-aggregate { background-color: #33bbee; } /* Cyan */
+        .color-water { background-color: #009988; } /* Teal */
+        .color-steel { background-color: #cc3311; } /* Red */
+        .color-bricks { background-color: #ee3377; } /* Magenta */
+        
+        /* Info Panels */
+        .info-panel, .tips-panel, .faq-panel {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .tip {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: white;
+            border-radius: 4px;
+        }
+
+        /* Donation Section */
+        .donation-panel {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 25px 0;
+            border: 1px dashed var(--secondary-color);
+        }
+
+        .donation-options {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .donation-options button {
+            padding: 10px 15px;
+            width: auto;
+            background-color: #28a745;
+        }
+
+        .donation-note {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Footer */
+        .site-footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 30px 0 10px;
+            margin-top: 40px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+            padding: 0 15px;
+            margin-bottom: 20px;
+        }
+
+        .footer-section h4 {
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 5px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section a {
+            color: #ddd;
+            text-decoration: none;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .donate-btn {
+            background-color: var(--accent-color);
+            width: auto;
+            padding: 8px 20px;
+        }
+
+        /* Local unit inputs */
+        .local-unit-inputs {
+            display: none;
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .local-unit-inputs.active {
+            display: block;
+        }
+
+        .local-unit-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .local-unit-group input {
+            flex: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dimension-inputs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                min-width: 120px;
+                padding: 12px 10px;
+                font-size: 14px;
+            }
+            
+            .unit-toggle {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .unit-toggle select {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .footer-section {
+                min-width: 100%;
+                text-align: center;
+            }
+
+            .local-unit-group {
+                flex-direction: column;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            
+            .calculator-container {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            
+            .tabs, button {
+                display: none;
+            }
+            
+            .calculator-content {
+                display: block !important;
+                padding: 0;
+            }
+            
+            .results {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Quick info section */
+        .quick-info {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .quick-info h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .quick-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .quick-info-item {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .quick-info-item strong {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <h1>Construction Materials Calculator</h1>
+    
+    <div class="info-panel">
+        <h3>Construction Quick Reference</h3>
+        <ul>
+            <li>Standard cement bag: 50kg</li>
+            <li>1m³ cement ≈ 28-30 bags</li>
+            <li>1m³ sand ≈ 1600kg</li>
+            <li>1m³ aggregate ≈ 1500kg</li>
+            <li>Steel density: 7850kg/m³</li>
+            <li>Standard brick size: 230×110×55 mm</li>
+        </ul>
+    </div>
+    
+    <div class="calculator-container">
+        <div class="tabs">
+            <div class="tab active" onclick="openCalculator('concrete')">Concrete</div>
+            <div class="tab" onclick="openCalculator('brick')">Brickwork</div>
+            <div class="tab" onclick="openCalculator('unit-converter')">Unit Converter</div>
+            <div class="tab" onclick="openCalculator('land-area')">Land Area</div>
+        </div>
+        
+        <!-- Concrete Calculator -->
+        <div id="concrete" class="calculator-content active">
+            <div class="settings-panel">
+                <h4>Concrete Mix Settings</h4>
+                <div class="input-group">
+                    <label for="concrete-grade">Concrete Grade:</label>
+                    <select id="concrete-grade" onchange="calculateConcrete()">
+                        <option value="M10">M10 (1:3:6)</option>
+                        <option value="M15">M15 (1:2:4)</option>
+                        <option value="M20" selected>M20 (1:1.5:3)</option>
+                        <option value="M25">M25 (1:1:2)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="wcr">Water Quantity per Cement:</label>
+                    <input type="number" id="wcr" min="0.3" max="0.6" step="0.05" value="0.45" class="input-highlight" onchange="calculateConcrete()">
+                    <small>Typically 0.4 to 0.6 (as per IS 456:2000)</small>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="concrete-volume">Volume of Concrete (m³):</label>
+                <input type="number" id="concrete-volume" placeholder="Enter volume" min="0.1" step="0.1" value="1" class="input-highlight" oninput="calculateConcrete()">
+            </div>
+            
+            <div class="input-group">
+                <label for="steel-percentage">Steel Percentage (as per IS Code):</label>
+                <input type="number" id="steel-percentage" min="0.5" max="5" step="0.1" value="1" class="input-highlight" onchange="calculateConcrete()">
+                <small>Typical range: 0.8% to 1.5% for slabs, 1% to 2% for beams, 2% to 3% for columns</small>
+            </div>
+            
+            <div class="truck-options">
+                <h4>Truck Capacity Options</h4>
+                <div class="input-group">
+                    <label for="sand-truck-capacity">Sand Truck Capacity (m³):</label>
+                    <input type="number" id="sand-truck-capacity" min="1" step="0.5" value="5" class="input-highlight" onchange="calculateConcrete()">
+                </div>
+                <div class="input-group">
+                    <label for="aggregate-truck-capacity">Aggregate Truck Capacity (m³):</label>
+                    <input type="number" id="aggregate-truck-capacity" min="1" step="0.5" value="5" class="input-highlight" onchange="calculateConcrete()">
+                </div>
+            </div>
+            
+            <div id="concrete-results" class="results">
+                <h3>Results</h3>
+                <div id="concrete-result-items">
+                    <div class="result-item">
+                        <span>Cement Required:</span>
+                        <span>0 bags (0 kg)</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Sand Required:</span>
+                        <span>0 m³ (0 kg) - 0 truck(s)</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Aggregate Required:</span>
+                        <span>0 m³ (0 kg) - 0 truck(s)</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Water Required:</span>
+                        <span>0 liters</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Steel Required (1%):</span>
+                        <span>0 kg</span>
+                    </div>
+                </div>
+                
+                <div class="visual-representation">
+                    <div class="visual-box color-cement" id="cement-visual">Cement</div>
+                    <div class="visual-box color-sand" id="sand-visual">Sand</div>
+                    <div class="visual-box color-aggregate" id="aggregate-visual">Aggregate</div>
+                    <div class="visual-box color-water" id="water-visual">Water</div>
+                    <div class="visual-box color-steel" id="steel-visual">Steel</div>
+                </div>
+            </div>
+            
+            <div class="tips-panel">
+                <h3>Concrete Tips</h3>
+                <div class="tip">
+                    <strong>Ordering:</strong> Always order 5-10% extra materials to account for wastage and spillage.
+                </div>
+                <div class="tip">
+                    <strong>Curing:</strong> Proper curing for 7-14 days significantly increases concrete strength.
+                </div>
+                <div class="tip">
+                    <strong>Mixing:</strong> Mix concrete thoroughly for uniform consistency and maximum strength.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Brickwork Calculator -->
+        <div id="brick" class="calculator-content">
+            <div class="settings-panel">
+                <h4>Brick Settings</h4>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="use-standard-brick" checked onclick="toggleBrickSize(); calculateBrickwork()">
+                    <label for="use-standard-brick">Use Standard Brick Size (230×110×55 mm)</label>
+                </div>
+                
+                <div id="custom-brick-size" style="display: none;">
+                    <div class="input-group">
+                        <label>Custom Brick Size (mm):</label>
+                        <div class="dimension-inputs">
+                            <input type="number" id="brick-length" placeholder="Length" min="1" step="1" value="230" class="input-highlight" onchange="calculateBrickwork()">
+                            <input type="number" id="brick-width" placeholder="Width" min="1" step="1" value="110" class="input-highlight" onchange="calculateBrickwork()">
+                            <input type="number" id="brick-height" placeholder="Height" min="1" step="1" value="55" class="input-highlight" onchange="calculateBrickwork()">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="mortar-ratio">Mortar Mix Ratio (Cement:Sand):</label>
+                    <select id="mortar-ratio" onchange="calculateBrickwork()">
+                        <option value="1:3">1:3 (For external walls)</option>
+                        <option value="1:4" selected>1:4 (For internal walls)</option>
+                        <option value="1:5">1:5 (For non-load bearing walls)</option>
+                        <option value="1:6">1:6 (For plastering)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="settings-panel">
+                <h4>Wall Dimensions</h4>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="use-volume-input" onclick="toggleWallInput(); calculateBrickwork()">
+                    <label for="use-volume-input">Enter Total Volume Instead of Dimensions</label>
+                </div>
+                
+                <div id="wall-dimensions-input">
+                    <div class="input-group">
+                        <label>Wall Dimensions (m):</label>
+                        <div class="dimension-inputs">
+                            <input type="number" id="wall-length" placeholder="Length" min="0.1" step="0.1" value="1" class="input-highlight" onchange="calculateBrickwork()">
+                            <input type="number" id="wall-height" placeholder="Height" min="0.1" step="0.1" value="1" class="input-highlight" onchange="calculateBrickwork()">
+                            <input type="number" id="wall-width" placeholder="Width" min="0.05" step="0.01" value="0.23" class="input-highlight" onchange="calculateBrickwork()">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="wall-volume-input" style="display: none;">
+                    <div class="input-group">
+                        <label for="wall-volume">Wall Volume (m³):</label>
+                        <input type="number" id="wall-volume" placeholder="Volume" min="0.1" step="0.1" value="1" class="input-highlight" onchange="calculateBrickwork()">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="truck-options">
+                <h4>Truck Capacity Options</h4>
+                <div class="input-group">
+                    <label for="sand-truck-capacity-brick">Sand Truck Capacity (m³):</label>
+                    <input type="number" id="sand-truck-capacity-brick" min="1" step="0.5" value="5" class="input-highlight" onchange="calculateBrickwork()">
+                </div>
+            </div>
+            
+            <div id="brick-results" class="results">
+                <h3>Results</h3>
+                <div id="brick-result-items">
+                    <div class="result-item">
+                        <span>Number of Bricks:</span>
+                        <span>0</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Mortar Volume:</span>
+                        <span>0 m³</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Cement Required:</span>
+                        <span>0 bags (0 kg)</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Sand Required:</span>
+                        <span>0 m³ (0 kg) - 0 truck(s)</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Water Required:</span>
+                        <span>0 liters</span>
+                    </div>
+                </div>
+                
+                <div class="visual-representation">
+                    <div class="visual-box color-bricks" id="bricks-visual">Bricks</div>
+                    <div class="visual-box color-cement" id="brick-cement-visual">Cement</div>
+                    <div class="visual-box color-sand" id="brick-sand-visual">Sand</div>
+                    <div class="visual-box color-water" id="brick-water-visual">Water</div>
+                </div>
+            </div>
+            
+            <div class="tips-panel">
+                <h3>Brickwork Tips</h3>
+                <div class="tip">
+                    <strong>Brick Soaking:</strong> Soak bricks in water before use to prevent moisture absorption from mortar.
+                </div>
+                <div class="tip">
+                    <strong>Mortar:</strong> Use fresh mortar and don't retemper mortar that has begun to set.
+                </div>
+                <div class="tip">
+                    <strong>Jointing:</strong> Properly fill all mortar joints and tool them for better weather resistance.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Unit Converter -->
+        <div id="unit-converter" class="calculator-content">
+            <div class="input-group">
+                <label for="converter-value">Value:</label>
+                <input type="number" id="converter-value" placeholder="Enter value" step="any" value="1" class="input-highlight" oninput="convertUnits()">
+            </div>
+            
+            <div class="dimension-inputs">
+                <div class="input-group">
+                    <label for="converter-from">From:</label>
+                    <select id="converter-from" class="input-highlight" onchange="convertUnits()">
+                        <optgroup label="Length">
+                            <option value="mm">Millimeter (mm)</option>
+                            <option value="cm">Centimeter (cm)</option>
+                            <option value="m" selected>Meter (m)</option>
+                            <option value="km">Kilometer (km)</option>
+                            <option value="inch">Inch</option>
+                            <option value="ft">Foot (ft)</option>
+                            <option value="yd">Yard (yd)</option>
+                            <option value="mile">Mile</option>
+                        </optgroup>
+                        <optgroup label="Area">
+                            <option value="mm2">Square Millimeter (mm²)</option>
+                            <option value="cm2">Square Centimeter (cm²)</option>
+                            <option value="m2">Square Meter (m²)</option>
+                            <option value="ha">Hectare (ha)</option>
+                            <option value="km2">Square Kilometer (km²)</option>
+                            <option value="inch2">Square Inch</option>
+                            <option value="ft2">Square Foot (ft²)</option>
+                            <option value="yd2">Square Yard (yd²)</option>
+                            <option value="acre">Acre</option>
+                            <option value="mile2">Square Mile</option>
+                        </optgroup>
+                        <optgroup label="Volume">
+                            <option value="mm3">Cubic Millimeter (mm³)</option>
+                            <option value="cm3">Cubic Centimeter (cm³)</option>
+                            <option value="m3">Cubic Meter (m³)</option>
+                            <option value="l">Liter (l)</option>
+                            <option value="ml">Milliliter (ml)</option>
+                            <option value="inch3">Cubic Inch</option>
+                            <option value="ft3">Cubic Foot (ft³)</option>
+                            <option value="yd3">Cubic Yard (yd³)</option>
+                            <option value="gal">Gallon (gal)</option>
+                        </optgroup>
+                        <optgroup label="Mass">
+                            <option value="mg">Milligram (mg)</option>
+                            <option value="g">Gram (g)</option>
+                            <option value="kg">Kilogram (kg)</option>
+                            <option value="ton">Metric Ton (ton)</option>
+                            <option value="oz">Ounce (oz)</option>
+                            <option value="lb">Pound (lb)</option>
+                            <option value="st">Stone (st)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="converter-to">To:</label>
+                    <select id="converter-to" class="input-highlight" onchange="convertUnits()">
+                        <optgroup label="Length">
+                            <option value="mm">Millimeter (mm)</option>
+                            <option value="cm">Centimeter (cm)</option>
+                            <option value="m" selected>Meter (m)</option>
+                            <option value="km">Kilometer (km)</option>
+                            <option value="inch">Inch</option>
+                            <option value="ft">Foot (ft)</option>
+                            <option value="yd">Yard (yd)</option>
+                            <option value="mile">Mile</option>
+                        </optgroup>
+                        <optgroup label="Area">
+                            <option value="mm2">Square Millimeter (mm²)</option>
+                            <option value="cm2">Square Centimeter (cm²)</option>
+                            <option value="m2">Square Meter (m²)</option>
+                            <option value="ha">Hectare (ha)</option>
+                            <option value="km2">Square Kilometer (km²)</option>
+                            <option value="inch2">Square Inch</option>
+                            <option value="ft2">Square Foot (ft²)</option>
+                            <option value="yd2">Square Yard (yd²)</option>
+                            <option value="acre">Acre</option>
+                            <option value="mile2">Square Mile</option>
+                        </optgroup>
+                        <optgroup label="Volume">
+                            <option value="mm3">Cubic Millimeter (mm³)</option>
+                            <option value="cm3">Cubic Centimeter (cm³)</option>
+                            <option value="m3">Cubic Meter (m³)</option>
+                            <option value="l">Liter (l)</option>
+                            <option value="ml">Milliliter (ml)</option>
+                            <option value="inch3">Cubic Inch</option>
+                            <option value="ft3">Cubic Foot (ft³)</option>
+                            <option value="yd3">Cubic Yard (yd³)</option>
+                            <option value="gal">Gallon (gal)</option>
+                        </optgroup>
+                        <optgroup label="Mass">
+                            <option value="mg">Milligram (mg)</option>
+                            <option value="g">Gram (g)</option>
+                            <option value="kg">Kilogram (kg)</option>
+                            <option value="ton">Metric Ton (ton)</option>
+                            <option value="oz">Ounce (oz)</option>
+                            <option value="lb">Pound (lb)</option>
+                            <option value="st">Stone (st)</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="converter-results" class="results">
+                <h3>Conversion Result</h3>
+                <div id="converter-result-items">
+                    <div class="result-item">
+                        <span>1 m =</span>
+                        <span>1 m</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tips-panel">
+                <h3>Conversion Tips</h3>
+                <div class="tip">
+                    <strong>Accuracy:</strong> For critical calculations, verify with multiple sources as conversion factors may vary slightly.
+                </div>
+                <div class="tip">
+                    <strong>Remember:</strong> 1 meter = 3.28084 feet, 1 liter = 0.264172 gallons, 1 kilogram = 2.20462 pounds
+                </div>
+            </div>
+        </div>
+        
+        <!-- Land Area Converter -->
+        <div id="land-area" class="calculator-content">
+            <div class="input-group">
+                <label for="land-area-value">Area Value:</label>
+                <input type="number" id="land-area-value" placeholder="Enter area value" step="any" value="1" class="input-highlight" oninput="checkLandAreaInput()">
+            </div>
+            
+            <div class="dimension-inputs">
+                <div class="input-group">
+                    <label for="land-area-from">From:</label>
+                    <select id="land-area-from" class="input-highlight" onchange="checkLandAreaInput()">
+                        <option value="m2">Square Meter (m²)</option>
+                        <option value="ha">Hectare (ha)</option>
+                        <option value="km2">Square Kilometer (km²)</option>
+                        <option value="ft2">Square Foot (ft²)</option>
+                        <option value="acre">Acre</option>
+                        <option value="ropani">Ropani (Nepal)</option>
+                        <option value="biga">Biga (India)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="land-area-to">To:</label>
+                    <select id="land-area-to" class="input-highlight" onchange="checkLandAreaInput()">
+                        <option value="m2">Square Meter (m²)</option>
+                        <option value="ha">Hectare (ha)</option>
+                        <option value="km2">Square Kilometer (km²)</option>
+                        <option value="ft2">Square Foot (ft²)</option>
+                        <option value="acre">Acre</option>
+                        <option value="ropani" selected>Ropani (Nepal)</option>
+                        <option value="biga">Biga (India)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="ropani-inputs" class="local-unit-inputs">
+                <h4>Enter Ropani Details</h4>
+                <div class="local-unit-group">
+                    <input type="number" id="ropani-value" placeholder="Ropani" min="0" step="1" value="0" class="input-highlight" oninput="convertFromRopani()">
+                    <input type="number" id="aana-value" placeholder="Aana" min="0" max="15" step="1" value="0" class="input-highlight" oninput="convertFromRopani()">
+                    <input type="number" id="paisa-value" placeholder="Paisa" min="0" max="3" step="1" value="0" class="input-highlight" oninput="convertFromRopani()">
+                    <input type="number" id="daam-value" placeholder="Daam" min="0" max="3" step="1" value="0" class="input-highlight" oninput="convertFromRopani()">
+                </div>
+            </div>
+            
+            <div id="biga-inputs" class="local-unit-inputs">
+                <h4>Enter Biga Details</h4>
+                <div class="local-unit-group">
+                    <input type="number" id="biga-value" placeholder="Biga" min="0" step="1" value="0" class="input-highlight" oninput="convertFromBiga()">
+                    <input type="number" id="katha-value" placeholder="Katha" min="0" max="19" step="1" value="0" class="input-highlight" oninput="convertFromBiga()">
+                    <input type="number" id="dhur-value" placeholder="Dhur" min="0" max="19" step="1" value="0" class="input-highlight" oninput="convertFromBiga()">
+                </div>
+            </div>
+            
+            <div id="land-area-results" class="results">
+                <h3>Conversion Result</h3>
+                <div id="land-area-result-items">
+                    <div class="result-item">
+                        <span>1 m² =</span>
+                        <span>0.001965 Ropani</span>
+                    </div>
+                </div>
+                
+                <div class="settings-panel">
+                    <h4>Local Unit Conversions</h4>
+                    <div class="result-item">
+                        <span>1 Ropani (Nepal):</span>
+                        <span>16 Aana = 64 Paisa = 256 Daam = 508.72 m²</span>
+                    </div>
+                    <div class="result-item">
+                        <span>1 Biga (India):</span>
+                        <span>20 Katha = 400 Dhur ≈ 1,350 m² (varies by region)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tips-panel">
+                <h3>Land Measurement Tips</h3>
+                <div class="tip">
+                    <strong>Regional Variations:</strong> Local units like Biga may vary in size by region - always verify local standards.
+                </div>
+                <div class="tip">
+                    <strong>Official Documents:</strong> For legal purposes, always use standardized units (square meters/hectares).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quick-info">
+        <h3>Quick Construction Reference</h3>
+        <div class="quick-info-grid">
+            <div class="quick-info-item">
+                <strong>Concrete Grades:</strong>
+                <div>M10 (1:3:6) - Foundation</div>
+                <div>M15 (1:2:4) - Flooring</div>
+                <div>M20 (1:1.5:3) - Beams</div>
+                <div>M25 (1:1:2) - Columns</div>
+            </div>
+            <div class="quick-info-item">
+                <strong>Material Densities:</strong>
+                <div>Cement: 1440 kg/m³</div>
+                <div>Sand: 1600 kg/m³</div>
+                <div>Aggregate: 1500 kg/m³</div>
+                <div>Steel: 7850 kg/m³</div>
+            </div>
+            <div class="quick-info-item">
+                <strong>Standard Sizes:</strong>
+                <div>Brick: 230×110×55 mm</div>
+                <div>Cement Bag: 50 kg</div>
+                <div>Steel Bar: 12m length</div>
+            </div>
+            <div class="quick-info-item">
+                <strong>Conversion Factors:</strong>
+                <div>1 m = 3.28 ft</div>
+                <div>1 m² = 10.76 ft²</div>
+                <div>1 m³ = 35.31 ft³</div>
+                <div>1 kg = 2.2 lbs</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="donation-panel">
+        <h3>Support This Project</h3>
+        <p>If you find this tool helpful, consider supporting the developer!</p>
+        <div class="donation-options">
+            <button onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=YOUR_PAYPAL_BUTTON_ID', '_blank')">Donate via PayPal</button>
+            <button onclick="donate('small')">☕ $1 Coffee</button>
+            <button onclick="donate('medium')">🍕 $3 Lunch</button>
+            <button onclick="donate('large')">🍔 $5 Dinner</button>
+        </div>
+        <p class="donation-note">Your support helps maintain and improve this free tool. Thank you!</p>
+    </div>
+    
+    <div class="faq-panel">
+        <h3>Frequently Asked Questions</h3>
+        <div class="faq-item">
+            <h4>How accurate are these calculations?</h4>
+            <p>Calculations follow Indian Standard (IS) codes and industry standards. Actual requirements may vary slightly based on site conditions and material quality.</p>
+        </div>
+        <div class="faq-item">
+            <h4>Can I save my calculations?</h4>
+            <p>Currently results aren't saved automatically. We recommend taking a screenshot or noting down the results. Future versions may include saving functionality.</p>
+        </div>
+        <div class="faq-item">
+            <h4>Why are there different concrete grades?</h4>
+            <p>Different grades (M10, M20 etc.) indicate the compressive strength of concrete in N/mm² after 28 days. Higher grades are used for structures needing more strength.</p>
+        </div>
+    </div>
+    
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>ConstructCalc Tools</h4>
+                <p>Precision construction calculators for professionals and DIYers</p>
+                <p>Developed by: <strong>Mr. Manandhar</strong></p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#" onclick="openCalculator('concrete'); return false;">Concrete Calculator</a></li>
+                    <li><a href="#" onclick="openCalculator('brick'); return false;">Brickwork Calculator</a></li>
+                    <li><a href="#" onclick="openCalculator('unit-converter'); return false;">Unit Converter</a></li>
+                    <li><a href="#" onclick="openCalculator('land-area'); return false;">Land Area Converter</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact & Support</h4>
+                <p>Email: sumitmdhr@gmail.com</p>
+                <button class="donate-btn" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=YOUR_PAYPAL_BUTTON_ID', '_blank')">Donate via PayPal</button>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 ConstructCalc Tools | Developed by Mr. Manandhar</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Tab functionality
+        function openCalculator(calculatorName) {
+            const calculators = document.getElementsByClassName('calculator-content');
+            const tabs = document.getElementsByClassName('tab');
+            
+            for (let i = 0; i < calculators.length; i++) {
+                calculators[i].classList.remove('active');
+                tabs[i].classList.remove('active');
+            }
+            
+            document.getElementById(calculatorName).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            // Recalculate when switching tabs
+            if (calculatorName === 'concrete') calculateConcrete();
+            if (calculatorName === 'brick') calculateBrickwork();
+            if (calculatorName === 'unit-converter') convertUnits();
+            if (calculatorName === 'land-area') checkLandAreaInput();
+        }
+        
+        // Toggle brick size input
+        function toggleBrickSize() {
+            const useStandard = document.getElementById('use-standard-brick').checked;
+            const customSizeDiv = document.getElementById('custom-brick-size');
+            
+            if (useStandard) {
+                customSizeDiv.style.display = 'none';
+            } else {
+                customSizeDiv.style.display = 'block';
+            }
+        }
+        
+        // Toggle wall input method
+        function toggleWallInput() {
+            const useVolume = document.getElementById('use-volume-input').checked;
+            const dimensionsDiv = document.getElementById('wall-dimensions-input');
+            const volumeDiv = document.getElementById('wall-volume-input');
+            
+            if (useVolume) {
+                dimensionsDiv.style.display = 'none';
+                volumeDiv.style.display = 'block';
+            } else {
+                dimensionsDiv.style.display = 'block';
+                volumeDiv.style.display = 'none';
+            }
+        }
+        
+        // Check land area input type
+        function checkLandAreaInput() {
+            const fromUnit = document.getElementById('land-area-from').value;
+            const toUnit = document.getElementById('land-area-to').value;
+            
+            document.getElementById('ropani-inputs').classList.remove('active');
+            document.getElementById('biga-inputs').classList.remove('active');
+            
+            if (fromUnit === 'ropani') {
+                document.getElementById('ropani-inputs').classList.add('active');
+                convertFromRopani();
+            } else if (fromUnit === 'biga') {
+                document.getElementById('biga-inputs').classList.add('active');
+                convertFromBiga();
+            } else {
+                convertLandArea();
+            }
+        }
+        
+        // Concrete calculation
+        function calculateConcrete() {
+            // Get values
+            const volume = parseFloat(document.getElementById('concrete-volume').value) || 0;
+            const steelPercentage = parseFloat(document.getElementById('steel-percentage').value) || 0;
+            const wcr = parseFloat(document.getElementById('wcr').value) || 0;
+            const sandTruckCapacity = parseFloat(document.getElementById('sand-truck-capacity').value) || 1;
+            const aggregateTruckCapacity = parseFloat(document.getElementById('aggregate-truck-capacity').value) || 1;
+            
+            // Get mix ratio based on grade
+            const grade = document.getElementById('concrete-grade').value;
+            const ratios = {
+                'M10': { cement: 1, sand: 3, aggregate: 6 },
+                'M15': { cement: 1, sand: 2, aggregate: 4 },
+                'M20': { cement: 1, sand: 1.5, aggregate: 3 },
+                'M25': { cement: 1, sand: 1, aggregate: 2 }
+            };
+            
+            const { cement: cementRatio, sand: sandRatio, aggregate: aggregateRatio } = ratios[grade];
+            
+            // Calculate dry volume (add 54% to wet volume as per IS code)
+            const dryVolume = volume * 1.54;
+            
+            // Calculate total parts
+            const totalParts = cementRatio + sandRatio + aggregateRatio;
+            
+            // Calculate material volumes
+            const cementVolume = (cementRatio / totalParts) * dryVolume;
+            const sandVolume = (sandRatio / totalParts) * dryVolume;
+            const aggregateVolume = (aggregateRatio / totalParts) * dryVolume;
+            
+            // Calculate quantities
+            const cementDensity = 1440; // kg/m³
+            const cementKg = cementVolume * cementDensity;
+            const cementBags = cementKg / 50; // 50kg per bag
+            
+            const sandDensity = 1600; // kg/m³ (dry loose)
+            const sandKg = sandVolume * sandDensity;
+            const sandTrucks = Math.ceil(sandVolume / sandTruckCapacity);
+            
+            const aggregateDensity = 1500; // kg/m³ (dry loose)
+            const aggregateKg = aggregateVolume * aggregateDensity;
+            const aggregateTrucks = Math.ceil(aggregateVolume / aggregateTruckCapacity);
+            
+            const waterLiters = cementKg * wcr;
+            
+            // Calculate steel (as per IS code)
+            const steelKg = volume * (steelPercentage / 100) * 7850; // 7850 kg/m³ is steel density
+            
+            // Update visual representation widths
+            updateVisual('cement-visual', cementVolume, 10);
+            updateVisual('sand-visual', sandVolume, 10);
+            updateVisual('aggregate-visual', aggregateVolume, 10);
+            updateVisual('water-visual', waterLiters/1000, 10); // Convert liters to m³ for visualization
+            updateVisual('steel-visual', steelKg/1000, 10); // Convert kg to tons for visualization
+            
+            // Display results
+            const resultsDiv = document.getElementById('concrete-result-items');
+            resultsDiv.innerHTML = `
+                <div class="result-item">
+                    <span>Cement Required:</span>
+                    <span>${cementBags.toFixed(2)} bags (${cementKg.toFixed(2)} kg)</span>
+                </div>
+                <div class="result-item">
+                    <span>Sand Required:</span>
+                    <span>${sandVolume.toFixed(3)} m³ (${sandKg.toFixed(2)} kg) - ${sandTrucks} truck(s)</span>
+                </div>
+                <div class="result-item">
+                    <span>Aggregate Required:</span>
+                    <span>${aggregateVolume.toFixed(3)} m³ (${aggregateKg.toFixed(2)} kg) - ${aggregateTrucks} truck(s)</span>
+                </div>
+                <div class="result-item">
+                    <span>Water Required:</span>
+                    <span>${waterLiters.toFixed(2)} liters</span>
+                </div>
+                <div class="result-item">
+                    <span>Steel Required (${steelPercentage}%):</span>
+                    <span>${steelKg.toFixed(2)} kg</span>
+                </div>
+            `;
+        }
+        
+        // Brickwork calculation
+        function calculateBrickwork() {
+            // Get brick dimensions
+            let brickL, brickW, brickH;
+            const useStandardBrick = document.getElementById('use-standard-brick').checked;
+            
+            if (useStandardBrick) {
+                brickL = 0.23; // meters
+                brickW = 0.11; // meters
+                brickH = 0.055; // meters
+            } else {
+                brickL = parseFloat(document.getElementById('brick-length').value) / 1000 || 0; // mm to m
+                brickW = parseFloat(document.getElementById('brick-width').value) / 1000 || 0; // mm to m
+                brickH = parseFloat(document.getElementById('brick-height').value) / 1000 || 0; // mm to m
+            }
+            
+            // Standard mortar thickness (10mm)
+            const mortarT = 0.01; // meters
+            
+            // Get wall volume
+            let wallVolume = 0;
+            const useVolumeInput = document.getElementById('use-volume-input').checked;
+            
+            if (useVolumeInput) {
+                wallVolume = parseFloat(document.getElementById('wall-volume').value) || 0;
+            } else {
+                const wallL = parseFloat(document.getElementById('wall-length').value) || 0;
+                const wallH = parseFloat(document.getElementById('wall-height').value) || 0;
+                const wallW = parseFloat(document.getElementById('wall-width').value) || 0;
+                wallVolume = wallL * wallH * wallW;
+            }
+            
+            // Calculate brick volume with mortar
+            const brickVolumeWithMortar = (brickL + mortarT) * (brickW + mortarT) * (brickH + mortarT);
+            
+            // Calculate number of bricks
+            const numberOfBricks = wallVolume / brickVolumeWithMortar;
+            
+            // Calculate mortar volume
+            const brickVolumeWithoutMortar = brickL * brickW * brickH;
+            const mortarVolume = wallVolume - (numberOfBricks * brickVolumeWithoutMortar);
+            
+            // Get mortar ratio
+            const ratioParts = document.getElementById('mortar-ratio').value.split(':');
+            const cementRatio = parseFloat(ratioParts[0]);
+            const sandRatio = parseFloat(ratioParts[1]);
+            
+            // Calculate mortar materials
+            const totalParts = cementRatio + sandRatio;
+            const cementVolume = (cementRatio / totalParts) * mortarVolume;
+            const sandVolume = (sandRatio / totalParts) * mortarVolume;
+            
+            // Calculate quantities
+            const cementDensity = 1440; // kg/m³
+            const cementKg = cementVolume * cementDensity;
+            const cementBags = cementKg / 50; // 50kg per bag
+            
+            const sandDensity = 1600; // kg/m³ (dry loose)
+            const sandKg = sandVolume * sandDensity;
+            
+            // Get truck capacity
+            const sandTruckCapacity = parseFloat(document.getElementById('sand-truck-capacity-brick').value) || 1;
+            const sandTrucks = Math.ceil(sandVolume / sandTruckCapacity);
+            
+            // Water required (about 25% of cement weight)
+            const waterLiters = cementKg * 0.25;
+            
+            // Update visual representation widths
+            updateVisual('bricks-visual', numberOfBricks, 1000);
+            updateVisual('brick-cement-visual', cementVolume, 1);
+            updateVisual('brick-sand-visual', sandVolume, 5);
+            updateVisual('brick-water-visual', waterLiters/1000, 1); // Convert liters to m³ for visualization
+            
+            // Display results
+            const resultsDiv = document.getElementById('brick-result-items');
+            resultsDiv.innerHTML = `
+                <div class="result-item">
+                    <span>Number of Bricks:</span>
+                    <span>${Math.ceil(numberOfBricks)}</span>
+                </div>
+                <div class="result-item">
+                    <span>Mortar Volume:</span>
+                    <span>${mortarVolume.toFixed(3)} m³</span>
+                </div>
+                <div class="result-item">
+                    <span>Cement Required:</span>
+                    <span>${cementBags.toFixed(2)} bags (${cementKg.toFixed(2)} kg)</span>
+                </div>
+                <div class="result-item">
+                    <span>Sand Required:</span>
+                    <span>${sandVolume.toFixed(3)} m³ (${sandKg.toFixed(2)} kg) - ${sandTrucks} truck(s)</span>
+                </div>
+                <div class="result-item">
+                    <span>Water Required:</span>
+                    <span>${waterLiters.toFixed(2)} liters</span>
+                </div>
+            `;
+        }
+        
+        // Unit conversion
+        function convertUnits() {
+            const value = parseFloat(document.getElementById('converter-value').value) || 0;
+            const fromUnit = document.getElementById('converter-from').value;
+            const toUnit = document.getElementById('converter-to').value;
+            
+            // Conversion factors
+            const conversionFactors = {
+                // Length
+                'mm': 0.001, 'cm': 0.01, 'm': 1, 'km': 1000,
+                'inch': 0.0254, 'ft': 0.3048, 'yd': 0.9144, 'mile': 1609.34,
+                // Area
+                'mm2': 0.000001, 'cm2': 0.0001, 'm2': 1, 'ha': 10000, 'km2': 1000000,
+                'inch2': 0.00064516, 'ft2': 0.092903, 'yd2': 0.836127, 'acre': 4046.86, 'mile2': 2589988.11,
+                // Volume
+                'mm3': 0.000000001, 'cm3': 0.000001, 'm3': 1, 'l': 0.001, 'ml': 0.000001,
+                'inch3': 0.000016387064, 'ft3': 0.028316846592, 'yd3': 0.764554857984, 'gal': 0.00378541,
+                // Mass
+                'mg': 0.000001, 'g': 0.001, 'kg': 1, 'ton': 1000,
+                'oz': 0.0283495, 'lb': 0.453592, 'st': 6.35029
+            };
+            
+            // Check if units are compatible (same category)
+            const unitCategories = {
+                'mm': 'length', 'cm': 'length', 'm': 'length', 'km': 'length',
+                'inch': 'length', 'ft': 'length', 'yd': 'length', 'mile': 'length',
+                'mm2': 'area', 'cm2': 'area', 'm2': 'area', 'ha': 'area', 'km2': 'area',
+                'inch2': 'area', 'ft2': 'area', 'yd2': 'area', 'acre': 'area', 'mile2': 'area',
+                'mm3': 'volume', 'cm3': 'volume', 'm3': 'volume', 'l': 'volume', 'ml': 'volume',
+                'inch3': 'volume', 'ft3': 'volume', 'yd3': 'volume', 'gal': 'volume',
+                'mg': 'mass', 'g': 'mass', 'kg': 'mass', 'ton': 'mass',
+                'oz': 'mass', 'lb': 'mass', 'st': 'mass'
+            };
+            
+            if (unitCategories[fromUnit] !== unitCategories[toUnit]) {
+                alert("Cannot convert between different unit categories!");
+                return;
+            }
+            
+            // Convert to base unit (meters, square meters, cubic meters, or kilograms)
+            const baseValue = value * conversionFactors[fromUnit];
+            
+            // Convert from base unit to target unit
+            const result = baseValue / conversionFactors[toUnit];
+            
+            // Display result
+            const resultsDiv = document.getElementById('converter-result-items');
+            resultsDiv.innerHTML = `
+                <div class="result-item">
+                    <span>${value} ${fromUnit} =</span>
+                    <span>${result.toFixed(6)} ${toUnit}</span>
+                </div>
+            `;
+        }
+        
+        // Convert from Ropani inputs
+        function convertFromRopani() {
+            const ropani = parseFloat(document.getElementById('ropani-value').value) || 0;
+            const aana = parseFloat(document.getElementById('aana-value').value) || 0;
+            const paisa = parseFloat(document.getElementById('paisa-value').value) || 0;
+            const daam = parseFloat(document.getElementById('daam-value').value) || 0;
+            
+            // Convert to square meters
+            const totalRopani = ropani + (aana / 16) + (paisa / 64) + (daam / 256);
+            const squareMeters = totalRopani * 508.72;
+            
+            // Update the main input field
+            document.getElementById('land-area-value').value = squareMeters.toFixed(2);
+            
+            // Convert to target unit
+            convertLandArea();
+        }
+        
+        // Convert from Biga inputs
+        function convertFromBiga() {
+            const biga = parseFloat(document.getElementById('biga-value').value) || 0;
+            const katha = parseFloat(document.getElementById('katha-value').value) || 0;
+            const dhur = parseFloat(document.getElementById('dhur-value').value) || 0;
+            
+            // Convert to square meters (using standard conversion)
+            const totalBiga = biga + (katha / 20) + (dhur / 400);
+            const squareMeters = totalBiga * 1350;
+            
+            // Update the main input field
+            document.getElementById('land-area-value').value = squareMeters.toFixed(2);
+            
+            // Convert to target unit
+            convertLandArea();
+        }
+        
+        // Land area conversion
+        function convertLandArea() {
+            const value = parseFloat(document.getElementById('land-area-value').value) || 0;
+            const fromUnit = document.getElementById('land-area-from').value;
+            const toUnit = document.getElementById('land-area-to').value;
+            
+            // Conversion factors to square meters
+            const toSquareMeters = {
+                'm2': 1,
+                'ha': 10000,
+                'km2': 1000000,
+                'ft2': 0.092903,
+                'acre': 4046.86,
+                'ropani': 508.72,      // 1 Ropani = 508.72 m²
+                'biga': 1350           // Approximate, varies by region
+            };
+            
+            // Conversion from square meters
+            const fromSquareMeters = {
+                'm2': 1,
+                'ha': 1/10000,
+                'km2': 1/1000000,
+                'ft2': 1/0.092903,
+                'acre': 1/4046.86,
+                'ropani': 1/508.72,
+                'biga': 1/1350
+            };
+            
+            // Convert to square meters first
+            const squareMeters = value * toSquareMeters[fromUnit];
+            
+            // Then convert to target unit
+            let result = squareMeters * fromSquareMeters[toUnit];
+            
+            // For local units, show breakdown
+            let breakdown = '';
+            
+            if (toUnit === 'ropani') {
+                const ropani = Math.floor(result);
+                const remaining = result - ropani;
+                const aana = Math.floor(remaining * 16);
+                const remainingAfterAana = remaining - (aana / 16);
+                const paisa = Math.floor(remainingAfterAana * 64);
+                const remainingAfterPaisa = remainingAfterAana - (paisa / 64);
+                const dam = Math.round(remainingAfterPaisa * 256);
+                
+                breakdown = `
+                    <div class="result-item">
+                        <span>Breakdown:</span>
+                        <span>${ropani} Ropani, ${aana} Aana, ${paisa} Paisa, ${dam} Daam</span>
+                    </div>
+                `;
+            } else if (toUnit === 'biga') {
+                const biga = Math.floor(result);
+                const remaining = result - biga;
+                const katha = Math.floor(remaining * 20);
+                const remainingAfterKatha = remaining - (katha / 20);
+                const dhur = Math.round(remainingAfterKatha * 400);
+                
+                breakdown = `
+                    <div class="result-item">
+                        <span>Breakdown:</span>
+                        <span>${biga} Biga, ${katha} Katha, ${dhur} Dhur</span>
+                    </div>
+                `;
+            }
+            
+            // Display result
+            const resultsDiv = document.getElementById('land-area-result-items');
+            resultsDiv.innerHTML = `
+                <div class="result-item">
+                    <span>${value} ${fromUnit} =</span>
+                    <span>${result.toFixed(6)} ${toUnit}</span>
+                </div>
+                ${breakdown}
+            `;
+        }
+        
+        // Update visual representation
+        function updateVisual(elementId, value, scale) {
+            const element = document.getElementById(elementId);
+            const percentage = Math.min(100, (value / scale) * 100);
+            element.style.width = `${percentage}%`;
+            element.title = `Value: ${value.toFixed(2)} (${percentage.toFixed(1)}% of scale ${scale})`;
+        }
+        
+        // Donation functions
+        function showDonateModal() {
+            window.open('https://www.paypal.com/donate/?hosted_button_id=YOUR_PAYPAL_BUTTON_ID', '_blank');
+        }
+        
+        function donate(amount) {
+            const amounts = { small: 3, medium: 5, large: 10 };
+            window.open(`https://www.paypal.com/donate/?hosted_button_id=YOUR_PAYPAL_BUTTON_ID&amount=${amounts[amount]}`, '_blank');
+        }
+        
+        // Initialize on load
+        window.onload = function() {
+            toggleBrickSize();
+            toggleWallInput();
+            calculateConcrete();
+            calculateBrickwork();
+            convertUnits();
+            checkLandAreaInput();
+        };
+    </script>
+</body>
+</html>
